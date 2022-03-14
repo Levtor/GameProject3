@@ -316,7 +316,7 @@ namespace GameProject3
 
             int horizontI = 0;
             int verticI = 0;
-            switch (Direction)
+            switch (direction)
             {
                 case CardinalDirection.North:
                     horizontI = 1;
