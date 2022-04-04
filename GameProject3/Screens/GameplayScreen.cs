@@ -40,15 +40,15 @@ namespace GameProject3
         private bool quit;
         private MovementState MovementState = MovementState.Still;
         private float movementAnimationTimer = 0;
+
         private int X = 0;
         private int Y = 0;
         private int destinationX = 0;
         private int destinationY = 0;
         private CardinalDirection Direction = CardinalDirection.East;
         private CardinalDirection destinationDirection = CardinalDirection.East;
-        private int ExitX;
-        private int ExitY;
-        private CardinalDirection ExitDirection;
+        private int visionDepth = 3;
+
         private Maze HedgeMaze;
         public RainParticleSystem RainSystem;
 
@@ -66,7 +66,9 @@ namespace GameProject3
 
             firstTime = true;
             quit = false;
-            HedgeMaze = new Maze(10, 6,
+
+            /*
+            HedgeMaze = new LineMaze(10, 6,
                 new bool[]
                 {
                     true , true , true , true , true , true , true , true , true , true ,
@@ -85,10 +87,17 @@ namespace GameProject3
                     true , true , false, false, false, true , false, false, false, false, true ,
                     true , false, true , false, true , false, false, false, true , true , true ,
                     true , false, false, false, false, true , true , false, false, false, true 
-                });
-            ExitX = 9;
-            ExitY = 0;
-            ExitDirection = CardinalDirection.North;
+                }, 9, 0, CardinalDirection.North);
+            */
+
+            HedgeMaze = new SquareMaze("Maze1.txt", content);
+
+            X = HedgeMaze.StartX;
+            Y = HedgeMaze.StartY;
+            destinationX = HedgeMaze.StartX;
+            destinationY = HedgeMaze.StartY;
+            Direction = HedgeMaze.StartDirection;
+            destinationDirection = HedgeMaze.StartDirection;
 
             // TODO: use this.Content to load your game content here
             texture = content.Load<Texture2D>("HedgeMaze");
@@ -183,7 +192,7 @@ namespace GameProject3
                 }
                 else if (newKeyboardState.IsKeyDown(Keys.Space) && oldKeyboardState.IsKeyUp(Keys.Space))
                 {
-                    if (X == ExitX && Y == ExitY && Direction == ExitDirection)
+                    if (X == HedgeMaze.ExitX && Y == HedgeMaze.ExitY && Direction == HedgeMaze.ExitDirection)
                     {
                         quit = true;
                     }
@@ -255,7 +264,7 @@ namespace GameProject3
             RainSystem.Draw(gameTime);
             spriteBatch.End();
 
-            if (X==ExitX && Y == ExitY && Direction == ExitDirection)
+            if (X==HedgeMaze.ExitX && Y == HedgeMaze.ExitY && Direction == HedgeMaze.ExitDirection)
             {
                 spriteBatch.Begin();
                 string title = "EXIT";
@@ -290,7 +299,7 @@ namespace GameProject3
                     break;
             }
             // distant squares
-            for (int i = 3; i > 0; i--)
+            for (int i = visionDepth; i > 0; i--)
             {
                 DrawHedgeSquare(spriteBatch, x + xOffset * i, y + yOffset * i, direction, i, offset);
             }

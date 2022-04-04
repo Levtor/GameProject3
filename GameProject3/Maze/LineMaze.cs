@@ -4,21 +4,38 @@ using System.Text;
 
 namespace GameProject3
 {
-    public class Maze
+    public class LineMaze : Maze
     {
         private bool[] HorizontalWallOrNot;
         private bool[] VerticalWallOrNot;
 
-        public int Height;
-        public int Width;
+        public int Height { get; }
+        public int Width { get; }
 
-        public Maze(int width, int height, bool[] horizontalDefinition, bool[] verticalDefinition)
+        public int ExitX { get; }
+        public int ExitY { get; }
+        public CardinalDirection ExitDirection { get; }
+
+        public int StartX { get; }
+        public int StartY { get; }
+        public CardinalDirection StartDirection { get; }
+
+        public LineMaze(int width, int height, bool[] horizontalDefinition, bool[] verticalDefinition,
+            int exitX, int exitY, CardinalDirection exitDirection, int startX, int startY, CardinalDirection startDirection)
         {
             Width = width;
             Height = height;
 
             HorizontalWallOrNot = horizontalDefinition;
             VerticalWallOrNot = verticalDefinition;
+
+            ExitX = exitX;
+            ExitY = exitY;
+            ExitDirection = exitDirection;
+
+            StartX = startX;
+            StartY = startY;
+            StartDirection = startDirection;
         }
 
         public bool HasWall(int X, int Y, CardinalDirection cardinal)

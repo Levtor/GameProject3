@@ -25,6 +25,9 @@
 /processorParam:TextureFormat=Color
 /build:HedgeMaze.png
 
+#begin Maze1.txt
+/copy:Maze1.txt
+
 #begin Raindrop.png
 /importer:TextureImporter
 /processor:TextureProcessor
