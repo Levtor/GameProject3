@@ -25,6 +25,7 @@ namespace GameProject3
     public class GameplayScreen : GameScreen
     {
         private ContentManager content;
+        private Game Game;
 
         private Texture2D texture;
         private SoundEffect steps;
@@ -49,13 +50,18 @@ namespace GameProject3
         private CardinalDirection destinationDirection = CardinalDirection.East;
         private int visionDepth = 3;
 
-        private Maze HedgeMaze;
+        private IMaze HedgeMaze;
         public RainParticleSystem RainSystem;
 
-        public GameplayScreen()
+        private Matrix Projection;
+        private QuadMazeView DrawsMaze;
+
+        public GameplayScreen(Game game)
         {
             TransitionOnTime = TimeSpan.FromSeconds(1.5);
             TransitionOffTime = TimeSpan.FromSeconds(0.5);
+
+            Game = game;
         }
 
         // Load graphics content for the game
@@ -106,6 +112,9 @@ namespace GameProject3
             //rain = content.Load<Song>("Lobo Loco - Woke up This Morning - RocknRoll (ID 1672)");
             tnr12 = content.Load<SpriteFont>("TNR12");
             tnr30 = content.Load<SpriteFont>("TNR30");
+
+            Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, Game.GraphicsDevice.Viewport.AspectRatio, .1f, 100f);
+            DrawsMaze = new QuadMazeView(visionDepth, Game);
         }
 
         public override void Deactivate()
@@ -222,6 +231,62 @@ namespace GameProject3
         {
             // TODO: Add your drawing code here
             var spriteBatch = ScreenManager.SpriteBatch;
+
+            //Draw2D(spriteBatch);
+            Draw3D();
+
+            spriteBatch.Begin();
+            RainSystem.Draw(gameTime);
+            spriteBatch.End();
+
+            if (X == HedgeMaze.ExitX && Y == HedgeMaze.ExitY && Direction == HedgeMaze.ExitDirection)
+            {
+                spriteBatch.Begin();
+                string title = "EXIT";
+                ScreenManager.SpriteBatch.DrawString(tnr30, title, new Vector2(400 - (int)tnr30.MeasureString(title).X / 2,
+                    120 - (int)tnr30.MeasureString(title).Y / 2), Color.White);
+                string instructions = "(Press SPACE to win!)";
+                ScreenManager.SpriteBatch.DrawString(tnr12, instructions, new Vector2(400 - (int)tnr12.MeasureString(instructions).X / 2,
+                    200 - (int)tnr12.MeasureString(instructions).Y / 2), Color.White);
+                spriteBatch.End();
+            }
+        }
+
+        private void Draw3D()
+        {
+            float scaleFactor;
+            Matrix view;
+            switch (MovementState)
+            {
+                case MovementState.Still:
+                    view = Matrix.CreateLookAt(Vector3.Zero, Vector3.Forward, Vector3.Up);
+                    DrawsMaze.Draw(view, Projection, HedgeMaze, X, Y, Direction);
+                    break;
+                case MovementState.Bump:
+                    scaleFactor = 0.25f - 4 * (movementAnimationTimer - .25f) * (movementAnimationTimer - .25f);
+                    view = Matrix.CreateLookAt(Vector3.Forward * scaleFactor, Vector3.Forward, Vector3.Up);
+                    DrawsMaze.Draw(view, Projection, HedgeMaze, X, Y, Direction);
+                    break;
+                case MovementState.MovingForward:
+                    scaleFactor = 4 * movementAnimationTimer;
+                    view = Matrix.CreateLookAt(Vector3.Forward * scaleFactor, Vector3.Forward * (scaleFactor + 1), Vector3.Up);
+                    DrawsMaze.Draw(view, Projection, HedgeMaze, X, Y, Direction);
+                    break;
+                case MovementState.TurningLeft:
+                    scaleFactor = MathHelper.PiOver4 * movementAnimationTimer;
+                    view = Matrix.CreateLookAt(Vector3.Zero, Vector3.Transform(Vector3.Forward, Matrix.CreateRotationY(scaleFactor)), Vector3.Up);
+                    DrawsMaze.Draw(view, Projection, HedgeMaze, X, Y, Direction);
+                    break;
+                case MovementState.TurningRight:
+                    scaleFactor = -MathHelper.PiOver4 * movementAnimationTimer;
+                    view = Matrix.CreateLookAt(Vector3.Zero, Vector3.Transform(Vector3.Forward, Matrix.CreateRotationY(scaleFactor)), Vector3.Up);
+                    DrawsMaze.Draw(view, Projection, HedgeMaze, X, Y, Direction);
+                    break;
+            }
+        }
+
+        private void Draw2D(SpriteBatch spriteBatch)
+        {
             SamplerState samplerState = SamplerState.PointClamp;
             float scaleFactor;
             Matrix transform;
@@ -258,22 +323,6 @@ namespace GameProject3
                     DrawHedgeView(spriteBatch, X, Y, Direction, -800 * 2 * movementAnimationTimer);
                     spriteBatch.End();
                     break;
-            }
-
-            spriteBatch.Begin();
-            RainSystem.Draw(gameTime);
-            spriteBatch.End();
-
-            if (X==HedgeMaze.ExitX && Y == HedgeMaze.ExitY && Direction == HedgeMaze.ExitDirection)
-            {
-                spriteBatch.Begin();
-                string title = "EXIT";
-                ScreenManager.SpriteBatch.DrawString(tnr30, title, new Vector2(400 - (int)tnr30.MeasureString(title).X / 2,
-                    120 - (int)tnr30.MeasureString(title).Y / 2), Color.White);
-                string instructions = "(Press SPACE to win!)";
-                ScreenManager.SpriteBatch.DrawString(tnr12, instructions, new Vector2(400 - (int)tnr12.MeasureString(instructions).X / 2,
-                    200 - (int)tnr12.MeasureString(instructions).Y / 2), Color.White);
-                spriteBatch.End();
             }
         }
 

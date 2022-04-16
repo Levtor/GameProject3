@@ -4,7 +4,7 @@ using System.Text;
 
 namespace GameProject3
 {
-    public interface Maze
+    public interface IMaze
     {
         public int Height { get; }
         public int Width { get; }

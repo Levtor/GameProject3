@@ -28,7 +28,7 @@ namespace GameProject3
         {
             screenManager.AddScreen(new WinScreen(), null);
             RainParticleSystem rainSystem = new RainParticleSystem(this, new Rectangle(-200, -30, 1200, 30));
-            GameplayScreen gScreen = new GameplayScreen();
+            GameplayScreen gScreen = new GameplayScreen(this);
             gScreen.RainSystem = rainSystem;
             screenManager.AddScreen(gScreen, null);
             screenManager.AddScreen(new TitleScreen(), null);

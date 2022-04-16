@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Content;
 
 namespace GameProject3
 {
-    public class SquareMaze : Maze
+    public class SquareMaze : IMaze
     {
         private int[] TileMap;
 

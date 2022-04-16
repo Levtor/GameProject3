@@ -4,7 +4,7 @@ using System.Text;
 
 namespace GameProject3
 {
-    public class LineMaze : Maze
+    public class LineMaze : IMaze
     {
         private bool[] HorizontalWallOrNot;
         private bool[] VerticalWallOrNot;
