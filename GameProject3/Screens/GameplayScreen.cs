@@ -233,7 +233,7 @@ namespace GameProject3
             var spriteBatch = ScreenManager.SpriteBatch;
 
             //Draw2D(spriteBatch);
-            Draw3D();
+            Draw3D(spriteBatch);
 
             spriteBatch.Begin();
             RainSystem.Draw(gameTime);
@@ -252,34 +252,52 @@ namespace GameProject3
             }
         }
 
-        private void Draw3D()
+        private void Draw3D(SpriteBatch spriteBatch)
         {
+            // furthest-back-ground (and sky)
+            SamplerState samplerState = SamplerState.PointClamp;
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, samplerState, null, null, null, null);
+            spriteBatch.Draw(texture, Vector2.Zero, new Rectangle(0, 30, 50, 30), Color.White, 0, new Vector2(0, 0), 16, SpriteEffects.None, 0);
+            spriteBatch.End();
             float scaleFactor;
             Matrix view;
+            Vector3 viewForward = Vector3.Forward;
+            switch (Direction)
+            {
+                case CardinalDirection.West:
+                    viewForward = Vector3.Transform(viewForward, Matrix.CreateRotationY(MathHelper.PiOver2));
+                    break;
+                case CardinalDirection.South:
+                    viewForward = Vector3.Transform(viewForward, Matrix.CreateRotationY(MathHelper.Pi));
+                    break;
+                case CardinalDirection.East:
+                    viewForward = Vector3.Transform(viewForward, Matrix.CreateRotationY(-MathHelper.PiOver2));
+                    break;
+            }
             switch (MovementState)
             {
                 case MovementState.Still:
-                    view = Matrix.CreateLookAt(Vector3.Zero, Vector3.Forward, Vector3.Up);
+                    view = Matrix.CreateLookAt(Vector3.Zero, viewForward, Vector3.Up);
                     DrawsMaze.Draw(view, Projection, HedgeMaze, X, Y, Direction);
                     break;
                 case MovementState.Bump:
                     scaleFactor = 0.25f - 4 * (movementAnimationTimer - .25f) * (movementAnimationTimer - .25f);
-                    view = Matrix.CreateLookAt(Vector3.Forward * scaleFactor, Vector3.Forward, Vector3.Up);
+                    view = Matrix.CreateLookAt(viewForward * scaleFactor, viewForward, Vector3.Up);
                     DrawsMaze.Draw(view, Projection, HedgeMaze, X, Y, Direction);
                     break;
                 case MovementState.MovingForward:
                     scaleFactor = 4 * movementAnimationTimer;
-                    view = Matrix.CreateLookAt(Vector3.Forward * scaleFactor, Vector3.Forward * (scaleFactor + 1), Vector3.Up);
+                    view = Matrix.CreateLookAt(viewForward * scaleFactor, viewForward * (scaleFactor + 1), Vector3.Up);
                     DrawsMaze.Draw(view, Projection, HedgeMaze, X, Y, Direction);
                     break;
                 case MovementState.TurningLeft:
-                    scaleFactor = MathHelper.PiOver4 * movementAnimationTimer;
-                    view = Matrix.CreateLookAt(Vector3.Zero, Vector3.Transform(Vector3.Forward, Matrix.CreateRotationY(scaleFactor)), Vector3.Up);
+                    scaleFactor = MathHelper.Pi * movementAnimationTimer;
+                    view = Matrix.CreateLookAt(Vector3.Zero, Vector3.Transform(viewForward, Matrix.CreateRotationY(scaleFactor)), Vector3.Up);
                     DrawsMaze.Draw(view, Projection, HedgeMaze, X, Y, Direction);
                     break;
                 case MovementState.TurningRight:
-                    scaleFactor = -MathHelper.PiOver4 * movementAnimationTimer;
-                    view = Matrix.CreateLookAt(Vector3.Zero, Vector3.Transform(Vector3.Forward, Matrix.CreateRotationY(scaleFactor)), Vector3.Up);
+                    scaleFactor = -MathHelper.Pi * movementAnimationTimer;
+                    view = Matrix.CreateLookAt(Vector3.Zero, Vector3.Transform(viewForward, Matrix.CreateRotationY(scaleFactor)), Vector3.Up);
                     DrawsMaze.Draw(view, Projection, HedgeMaze, X, Y, Direction);
                     break;
             }

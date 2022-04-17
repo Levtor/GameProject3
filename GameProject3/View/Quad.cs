@@ -87,19 +87,8 @@ namespace GameProject3
         {
             effect = new BasicEffect(game.GraphicsDevice);
             effect.World = Matrix.Identity;
-            effect.View = Matrix.CreateLookAt(
-                new Vector3(0, 0, 4), // The camera position
-                new Vector3(0, 0, 0), // The camera target,
-                Vector3.Up            // The camera up vector
-            );
-            effect.Projection = Matrix.CreatePerspectiveFieldOfView(
-                MathHelper.PiOver4,                         // The field-of-view 
-                game.GraphicsDevice.Viewport.AspectRatio,   // The aspect ratio
-                0.1f, // The near plane distance 
-                100.0f // The far plane distance
-            );
             effect.TextureEnabled = true;
-            effect.Texture = game.Content.Load<Texture2D>("HedgeMaze");
+            effect.Texture = game.Content.Load<Texture2D>("Hedge");
         }
 
         /// <summary>
@@ -108,11 +97,13 @@ namespace GameProject3
         /// <param name="camera">The camera to use to draw the quad</param>
         public void Draw(Matrix view, Matrix projection)
         {
-            // Cache the old blend state 
-            BlendState oldBlendState = game.GraphicsDevice.BlendState;
+            // Cache old rasterizer state
+            RasterizerState oldState = game.GraphicsDevice.RasterizerState;
 
-            // Enable alpha blending 
-            game.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            // Disable backface culling 
+            RasterizerState rasterizerState = new RasterizerState();
+            rasterizerState.CullMode = CullMode.None;
+            game.GraphicsDevice.RasterizerState = rasterizerState;
 
             // set the view and projection matrices
             effect.View = view;
@@ -132,8 +123,8 @@ namespace GameProject3
                 2           // The number of triangles to draw
             );
 
-            // Restore the old blend state 
-            game.GraphicsDevice.BlendState = oldBlendState;
+            // Restore the prior rasterizer state 
+            game.GraphicsDevice.RasterizerState = oldState;
         }
     }
 }
