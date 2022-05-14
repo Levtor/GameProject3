@@ -19,49 +19,53 @@ namespace GameProject3
         TurningRight
     }
 
-    // This screen implements the actual game logic. It is just a
-    // placeholder to get the idea across: you'll probably want to
-    // put some more interesting gameplay in here!
     public class GameplayScreen : GameScreen
     {
         private ContentManager content;
         private Game Game;
+        private RainParticleSystem RainSystem;
 
         private Texture2D texture;
-        private SoundEffect steps;
+        private SoundEffect steps1;
+        private SoundEffect steps2;
+        private SoundEffect steps3;
+        private SoundEffect steps4;
+        private SoundEffect steps5;
         private SoundEffect bump;
         private Song rain;
-        private SpriteFont tnr12;
-        private SpriteFont tnr30;
+        private SpriteFont tnrsmall;
+        private SpriteFont tnrbig;
 
         private KeyboardState newKeyboardState;
         private KeyboardState oldKeyboardState;
 
-        private bool firstTime;
-        private bool quit;
-        private MovementState MovementState = MovementState.Still;
-        private float movementAnimationTimer = 0;
-
-        private int X = 0;
-        private int Y = 0;
-        private int destinationX = 0;
-        private int destinationY = 0;
-        private CardinalDirection Direction = CardinalDirection.East;
-        private CardinalDirection destinationDirection = CardinalDirection.East;
-        private int visionDepth = 3;
-
+        private string MazeFileName;
         private IMaze HedgeMaze;
-        public RainParticleSystem RainSystem;
+        private int X;
+        private int Y;
+        private int destinationX;
+        private int destinationY;
+        private CardinalDirection Direction;
+        private CardinalDirection destinationDirection;
+        private int visionDepth;
 
         private Matrix Projection;
         private QuadMazeView DrawsMaze;
 
-        public GameplayScreen(Game game)
+        private bool firstTime = true;
+        private bool quit = false;
+        private bool pixelated = false;
+        private MovementState MovementState = MovementState.Still;
+        private float movementAnimationTimer = 0;
+
+        public GameplayScreen(Game game, RainParticleSystem rainSystem, string mazeFileName)
         {
             TransitionOnTime = TimeSpan.FromSeconds(1.5);
             TransitionOffTime = TimeSpan.FromSeconds(0.5);
 
             Game = game;
+            RainSystem = rainSystem;
+            MazeFileName = mazeFileName;
         }
 
         // Load graphics content for the game
@@ -70,48 +74,26 @@ namespace GameProject3
             if (content == null)
                 content = new ContentManager(ScreenManager.Game.Services, "Content");
 
-            firstTime = true;
-            quit = false;
-
-            /*
-            HedgeMaze = new LineMaze(10, 6,
-                new bool[]
-                {
-                    true , true , true , true , true , true , true , true , true , true ,
-                    false, true , false, false, false, true , true , true , false, false,
-                    false, true , false, false, false, true , false, false, true , true ,
-                    false, false, true , false, true , false, true , true , true , false,
-                    false, true , true , true , false, true , true , true , true , false,
-                    false, false, true , true , false, true , false, false, true , false,
-                    true , true , true , true , true , true , true , true , true , true 
-                },
-                new bool[]
-                {
-                    true , false, false, true , true , false, false, false, false, true , true ,
-                    true , true , false, false, true , true , false, true , true , false, true ,
-                    true , true , true , true , true , false, false, true , false, false, true ,
-                    true , true , false, false, false, true , false, false, false, false, true ,
-                    true , false, true , false, true , false, false, false, true , true , true ,
-                    true , false, false, false, false, true , true , false, false, false, true 
-                }, 9, 0, CardinalDirection.North);
-            */
-
-            HedgeMaze = new SquareMaze("Maze1.txt", content);
-
+            HedgeMaze = new SquareMaze(MazeFileName, content);
             X = HedgeMaze.StartX;
             Y = HedgeMaze.StartY;
             destinationX = HedgeMaze.StartX;
             destinationY = HedgeMaze.StartY;
             Direction = HedgeMaze.StartDirection;
             destinationDirection = HedgeMaze.StartDirection;
+            visionDepth = HedgeMaze.VisionDepth;
 
-            // TODO: use this.Content to load your game content here
             texture = content.Load<Texture2D>("HedgeMaze");
-            //steps = content.Load<SoundEffect>("LetterHit");
-            //bump = content.Load<SoundEffect>("LetterHit");
-            //rain = content.Load<Song>("Lobo Loco - Woke up This Morning - RocknRoll (ID 1672)");
-            tnr12 = content.Load<SpriteFont>("TNR12");
-            tnr30 = content.Load<SpriteFont>("TNR30");
+            steps1 = content.Load<SoundEffect>("footsteps1");
+            steps2 = content.Load<SoundEffect>("footsteps2");
+            steps3 = content.Load<SoundEffect>("footsteps3");
+            steps4 = content.Load<SoundEffect>("footsteps4");
+            steps5 = content.Load<SoundEffect>("footsteps5");
+            bump = content.Load<SoundEffect>("zapsplat_foley_bush_leaves_thick_hard_quick_movement_impact_001");
+            rain = content.Load<Song>("zapsplat_nature_rain_downpour_garden_medium_turns_heavy_half_way_wind_picks_up_80329");
+            MediaPlayer.Volume = 0.5f;
+            tnrsmall = content.Load<SpriteFont>("TNRsmall");
+            tnrbig = content.Load<SpriteFont>("TNRbig");
 
             Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, Game.GraphicsDevice.Viewport.AspectRatio, .1f, 100f);
             DrawsMaze = new QuadMazeView(visionDepth, Game);
@@ -149,8 +131,9 @@ namespace GameProject3
             {
                 firstTime = false;
                 if (RainSystem != null) RainSystem.IsRaining = true;
-                //MediaPlayer.IsRepeating = true;
-                //MediaPlayer.Play(rain);
+                UpdateFallingRainDirection();
+                MediaPlayer.IsRepeating = true;
+                MediaPlayer.Play(rain);
                 newKeyboardState = Keyboard.GetState();
             }
 
@@ -164,13 +147,13 @@ namespace GameProject3
                     if (HedgeMaze.HasWall(X, Y, Direction))
                     {
                         MovementState = MovementState.Bump;
-                        //bump.Play();
+                        bump.Play();
                         movementAnimationTimer = 0;
                     }
                     else
                     {
                         MovementState = MovementState.MovingForward;
-                        //steps.Play();
+                        PlayFootsteps();
                         movementAnimationTimer = 0;
                         destinationX = X;
                         destinationY = Y;
@@ -184,7 +167,7 @@ namespace GameProject3
                 else if (newKeyboardState.IsKeyDown(Keys.Left) && oldKeyboardState.IsKeyUp(Keys.Left))
                 {
                     MovementState = MovementState.TurningLeft;
-                    //steps.Play();
+                    PlayFootsteps();
                     movementAnimationTimer = 0;
                     destinationX = X;
                     destinationY = Y;
@@ -193,7 +176,7 @@ namespace GameProject3
                 else if (newKeyboardState.IsKeyDown(Keys.Right) && oldKeyboardState.IsKeyUp(Keys.Right))
                 {
                     MovementState = MovementState.TurningRight;
-                    //steps.Play();
+                    PlayFootsteps();
                     movementAnimationTimer = 0;
                     destinationX = X;
                     destinationY = Y;
@@ -216,7 +199,8 @@ namespace GameProject3
                     X = destinationX;
                     Y = destinationY;
                     Direction = destinationDirection;
-                    RainSystem.Direction = Direction;
+
+                    UpdateFallingRainDirection();
                 }
             }
 
@@ -226,14 +210,57 @@ namespace GameProject3
                 ExitScreen();
             }
         }
+        public void UpdateFallingRainDirection()
+        {
+            switch (Direction)
+            {
+                case CardinalDirection.North:
+                    RainSystem.Offset = 200 * (X - HedgeMaze.ExitX) / (HedgeMaze.Width - 2);
+                    break;
+                case CardinalDirection.South:
+                    RainSystem.Offset = 200 * (HedgeMaze.ExitX - X) / (HedgeMaze.Width - 2);
+                    break;
+                case CardinalDirection.West:
+                    RainSystem.Offset = 200 * (HedgeMaze.ExitY - Y) / (HedgeMaze.Height - 2);
+                    break;
+                case CardinalDirection.East:
+                    RainSystem.Offset = 200 * (Y - HedgeMaze.ExitY) / (HedgeMaze.Height - 2);
+                    break;
+            }
+        }
+
+        private int lastStepPlayed = 5;
+        private void PlayFootsteps()
+        {
+            int stepPair = RandomHelper.Next(1, 4);
+            if (stepPair == lastStepPlayed) stepPair++;
+            switch (stepPair)
+            {
+                case 1:
+                    steps1.Play();
+                    break;
+                case 2:
+                    steps2.Play();
+                    break;
+                case 3:
+                    steps3.Play();
+                    break;
+                case 4:
+                    steps4.Play();
+                    break;
+                case 5:
+                    steps5.Play();
+                    break;
+            }
+            lastStepPlayed = stepPair;
+        }
 
         public override void Draw(GameTime gameTime)
         {
-            // TODO: Add your drawing code here
             var spriteBatch = ScreenManager.SpriteBatch;
 
-            //Draw2D(spriteBatch);
-            Draw3D(spriteBatch);
+            if (pixelated) Draw2D(spriteBatch);
+            else Draw3D(spriteBatch);
 
             spriteBatch.Begin();
             RainSystem.Draw(gameTime);
@@ -243,11 +270,11 @@ namespace GameProject3
             {
                 spriteBatch.Begin();
                 string title = "EXIT";
-                ScreenManager.SpriteBatch.DrawString(tnr30, title, new Vector2(400 - (int)tnr30.MeasureString(title).X / 2,
-                    120 - (int)tnr30.MeasureString(title).Y / 2), Color.White);
-                string instructions = "(Press SPACE to win!)";
-                ScreenManager.SpriteBatch.DrawString(tnr12, instructions, new Vector2(400 - (int)tnr12.MeasureString(instructions).X / 2,
-                    200 - (int)tnr12.MeasureString(instructions).Y / 2), Color.White);
+                ScreenManager.SpriteBatch.DrawString(tnrbig, title, new Vector2(400 - (int)tnrbig.MeasureString(title).X / 2,
+                    120 - (int)tnrbig.MeasureString(title).Y / 2), Color.White);
+                string instructions = "(Press SPACE to proceed)";
+                ScreenManager.SpriteBatch.DrawString(tnrsmall, instructions, new Vector2(400 - (int)tnrsmall.MeasureString(instructions).X / 2,
+                    200 - (int)tnrsmall.MeasureString(instructions).Y / 2), Color.White);
                 spriteBatch.End();
             }
         }
@@ -278,27 +305,27 @@ namespace GameProject3
             {
                 case MovementState.Still:
                     view = Matrix.CreateLookAt(Vector3.Zero, viewForward, Vector3.Up);
-                    DrawsMaze.Draw(view, Projection, HedgeMaze, X, Y, Direction);
+                    DrawsMaze.Draw(view, Projection, HedgeMaze, X, Y);
                     break;
                 case MovementState.Bump:
                     scaleFactor = 0.25f - 4 * (movementAnimationTimer - .25f) * (movementAnimationTimer - .25f);
                     view = Matrix.CreateLookAt(viewForward * scaleFactor, viewForward, Vector3.Up);
-                    DrawsMaze.Draw(view, Projection, HedgeMaze, X, Y, Direction);
+                    DrawsMaze.Draw(view, Projection, HedgeMaze, X, Y);
                     break;
                 case MovementState.MovingForward:
                     scaleFactor = 4 * movementAnimationTimer;
                     view = Matrix.CreateLookAt(viewForward * scaleFactor, viewForward * (scaleFactor + 1), Vector3.Up);
-                    DrawsMaze.Draw(view, Projection, HedgeMaze, X, Y, Direction);
+                    DrawsMaze.Draw(view, Projection, HedgeMaze, X, Y);
                     break;
                 case MovementState.TurningLeft:
                     scaleFactor = MathHelper.Pi * movementAnimationTimer;
                     view = Matrix.CreateLookAt(Vector3.Zero, Vector3.Transform(viewForward, Matrix.CreateRotationY(scaleFactor)), Vector3.Up);
-                    DrawsMaze.Draw(view, Projection, HedgeMaze, X, Y, Direction);
+                    DrawsMaze.Draw(view, Projection, HedgeMaze, X, Y);
                     break;
                 case MovementState.TurningRight:
                     scaleFactor = -MathHelper.Pi * movementAnimationTimer;
                     view = Matrix.CreateLookAt(Vector3.Zero, Vector3.Transform(viewForward, Matrix.CreateRotationY(scaleFactor)), Vector3.Up);
-                    DrawsMaze.Draw(view, Projection, HedgeMaze, X, Y, Direction);
+                    DrawsMaze.Draw(view, Projection, HedgeMaze, X, Y);
                     break;
             }
         }
@@ -312,39 +339,39 @@ namespace GameProject3
             {
                 case MovementState.Still:
                     spriteBatch.Begin(SpriteSortMode.Deferred, null, samplerState, null, null, null, null);
-                    DrawHedgeView(spriteBatch, X, Y, Direction, 0);
+                    DrawHedgeView2D(spriteBatch, X, Y, Direction, 0);
                     spriteBatch.End();
                     break;
                 case MovementState.Bump:
                     scaleFactor = 1.25f - 4 * (movementAnimationTimer - .25f) * (movementAnimationTimer - .25f);
                     transform = Matrix.CreateScale(scaleFactor) * Matrix.CreateTranslation(400 - 400 * scaleFactor, 240 - 240 * scaleFactor, 0);
                     spriteBatch.Begin(SpriteSortMode.Deferred, null, samplerState, null, null, null, transform);
-                    DrawHedgeView(spriteBatch, X, Y, Direction, 0);
+                    DrawHedgeView2D(spriteBatch, X, Y, Direction, 0);
                     spriteBatch.End();
                     break;
                 case MovementState.MovingForward:
                     scaleFactor = 1 + 4*movementAnimationTimer/3;
                     transform = Matrix.CreateScale(scaleFactor) * Matrix.CreateTranslation(400 - 400 * scaleFactor, 240 - 240 * scaleFactor, 0);
                     spriteBatch.Begin(SpriteSortMode.Deferred, null, samplerState, null, null, null, transform);
-                    DrawHedgeView(spriteBatch, X, Y, Direction, 0);
+                    DrawHedgeView2D(spriteBatch, X, Y, Direction, 0);
                     spriteBatch.End();
                     break;
                 case MovementState.TurningLeft:
                     spriteBatch.Begin(SpriteSortMode.Deferred, null, samplerState, null, null, null, null);
-                    DrawHedgeView(spriteBatch, X, Y, destinationDirection, -800*(1 - 2 * movementAnimationTimer));
-                    DrawHedgeView(spriteBatch, X, Y, Direction, 800 * 2 * movementAnimationTimer);
+                    DrawHedgeView2D(spriteBatch, X, Y, destinationDirection, -800*(1 - 2 * movementAnimationTimer));
+                    DrawHedgeView2D(spriteBatch, X, Y, Direction, 800 * 2 * movementAnimationTimer);
                     spriteBatch.End();
                     break;
                 case MovementState.TurningRight:
                     spriteBatch.Begin(SpriteSortMode.Deferred, null, samplerState, null, null, null, null);
-                    DrawHedgeView(spriteBatch, X, Y, destinationDirection, 800 * (1 - 2 * movementAnimationTimer));
-                    DrawHedgeView(spriteBatch, X, Y, Direction, -800 * 2 * movementAnimationTimer);
+                    DrawHedgeView2D(spriteBatch, X, Y, destinationDirection, 800 * (1 - 2 * movementAnimationTimer));
+                    DrawHedgeView2D(spriteBatch, X, Y, Direction, -800 * 2 * movementAnimationTimer);
                     spriteBatch.End();
                     break;
             }
         }
 
-        private void DrawHedgeView(SpriteBatch spriteBatch, int x, int y, CardinalDirection direction, float offset)
+        private void DrawHedgeView2D(SpriteBatch spriteBatch, int x, int y, CardinalDirection direction, float offset)
         {
             // furthest-back-ground (and sky)
             spriteBatch.Draw(texture, new Vector2(offset, 0), new Rectangle(0, 30, 50, 30), Color.White, 0, new Vector2(0, 0), 16, SpriteEffects.None, 0);
@@ -368,7 +395,7 @@ namespace GameProject3
             // distant squares
             for (int i = visionDepth; i > 0; i--)
             {
-                DrawHedgeSquare(spriteBatch, x + xOffset * i, y + yOffset * i, direction, i, offset);
+                DrawHedgeSquare2D(spriteBatch, x + xOffset * i, y + yOffset * i, direction, i, offset);
             }
             // current square
             if (HedgeMaze.HasWall(x, y, direction))
@@ -377,7 +404,7 @@ namespace GameProject3
                     new Rectangle(0, 0, 50, 30), Color.White, 0, new Vector2(0, 0), 16, SpriteEffects.None, 0);
         }
 
-        private void DrawHedgeSquare(SpriteBatch spriteBatch, int x, int y, CardinalDirection direction, int depth, float offset)
+        private void DrawHedgeSquare2D(SpriteBatch spriteBatch, int x, int y, CardinalDirection direction, int depth, float offset)
         {
             float sizeScale1 = 0.6f;
             float sizeScale2 = 1;

@@ -10,8 +10,8 @@ namespace GameProject3
     public class TitleScreen : GameScreen
     {
         ContentManager content;
-        private SpriteFont tnr12;
-        private SpriteFont tnr30;
+        private SpriteFont tnrsmall;
+        private SpriteFont tnrbig;
 
         public override void Activate()
         {
@@ -19,8 +19,8 @@ namespace GameProject3
 
             if (content == null) content = new ContentManager(ScreenManager.Game.Services, "Content");
 
-            tnr12 = content.Load<SpriteFont>("TNR12");
-            tnr30 = content.Load<SpriteFont>("TNR30");
+            tnrsmall = content.Load<SpriteFont>("TNRsmall");
+            tnrbig = content.Load<SpriteFont>("TNRbig");
         }
 
         public override void HandleInput(GameTime gameTime, InputState input)
@@ -37,23 +37,25 @@ namespace GameProject3
             ScreenManager.SpriteBatch.Begin();
             
             string title = "A DARK AND STORMY NIGHT";
-            ScreenManager.SpriteBatch.DrawString(tnr30, title, new Vector2(400 - (int)tnr30.MeasureString(title).X / 2,
-                120 - (int)tnr30.MeasureString(title).Y / 2), Color.Black);
+            ScreenManager.SpriteBatch.DrawString(tnrbig, title, new Vector2(400 - (int)tnrbig.MeasureString(title).X / 2,
+                100 - (int)tnrbig.MeasureString(title).Y / 2), Color.Black);
             string instructions = "Use the forward key to move forward.";
-            ScreenManager.SpriteBatch.DrawString(tnr12, instructions, new Vector2(400 - (int)tnr12.MeasureString(instructions).X / 2,
-                200 - (int)tnr12.MeasureString(instructions).Y / 2), Color.Black);
+            ScreenManager.SpriteBatch.DrawString(tnrsmall, instructions, new Vector2(400 - (int)tnrsmall.MeasureString(instructions).X / 2,
+                200 - (int)tnrsmall.MeasureString(instructions).Y / 2), Color.Black);
             instructions = "Use the left and right keys to rotate.";
-            ScreenManager.SpriteBatch.DrawString(tnr12, instructions, new Vector2(400 - (int)tnr12.MeasureString(instructions).X / 2,
-                220 - (int)tnr12.MeasureString(instructions).Y / 2), Color.Black);
-            instructions = "Find the exit and press SPACE there to win!";
-            ScreenManager.SpriteBatch.DrawString(tnr12, instructions, new Vector2(400 - (int)tnr12.MeasureString(instructions).X / 2,
-                240 - (int)tnr12.MeasureString(instructions).Y / 2), Color.Black);
-            instructions = "Press ENTER to continue";
-            ScreenManager.SpriteBatch.DrawString(tnr12, instructions, new Vector2(400 - (int)tnr12.MeasureString(instructions).X / 2,
-                260 - (int)tnr12.MeasureString(instructions).Y / 2), Color.Black);
-            instructions = "(BEWARE: the rain falls away from the EXIT)";
-            ScreenManager.SpriteBatch.DrawString(tnr12, instructions, new Vector2(400 - (int)tnr12.MeasureString(instructions).X / 2,
-                300 - (int)tnr12.MeasureString(instructions).Y / 2), Color.Black);
+            ScreenManager.SpriteBatch.DrawString(tnrsmall, instructions, new Vector2(400 - (int)tnrsmall.MeasureString(instructions).X / 2,
+                230 - (int)tnrsmall.MeasureString(instructions).Y / 2), Color.Black);
+
+            instructions = "BEWARE: the rain is a trickster";
+            ScreenManager.SpriteBatch.DrawString(tnrsmall, instructions, new Vector2(400 - (int)tnrsmall.MeasureString(instructions).X / 2,
+                290 - (int)tnrsmall.MeasureString(instructions).Y / 2), Color.Black);
+            instructions = "and leads away from the EXITs";
+            ScreenManager.SpriteBatch.DrawString(tnrsmall, instructions, new Vector2(400 - (int)tnrsmall.MeasureString(instructions).X / 2,
+                320 - (int)tnrsmall.MeasureString(instructions).Y / 2), Color.Black);
+
+            instructions = "(Press ENTER to continue)";
+            ScreenManager.SpriteBatch.DrawString(tnrsmall, instructions, new Vector2(400 - (int)tnrsmall.MeasureString(instructions).X / 2,
+                410 - (int)tnrsmall.MeasureString(instructions).Y / 2), Color.Black);
 
             ScreenManager.SpriteBatch.End();
         }

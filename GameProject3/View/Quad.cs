@@ -51,16 +51,16 @@ namespace GameProject3
             vertices = new VertexPositionTexture[4];
             // Define vertex 0 (top left)
             vertices[0].Position = topLeft;
-            vertices[0].TextureCoordinate = new Vector2(0, -1);
+            vertices[0].TextureCoordinate = new Vector2(0, 0);
             // Define vertex 1 (top right)
             vertices[1].Position = topRight;
-            vertices[1].TextureCoordinate = new Vector2(1, -1);
+            vertices[1].TextureCoordinate = new Vector2(1, 0);
             // define vertex 2 (bottom right)
             vertices[2].Position = bottomRight;
-            vertices[2].TextureCoordinate = new Vector2(1, 0);
+            vertices[2].TextureCoordinate = new Vector2(1, 1);
             // define vertex 3 (bottom left) 
             vertices[3].Position = bottomLeft;
-            vertices[3].TextureCoordinate = new Vector2(0, 0);
+            vertices[3].TextureCoordinate = new Vector2(0, 1);
         }
 
         /// <summary>

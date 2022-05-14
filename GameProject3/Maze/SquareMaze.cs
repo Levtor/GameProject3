@@ -21,14 +21,17 @@ namespace GameProject3
         public int StartY { get; }
         public CardinalDirection StartDirection { get; }
 
+        public int VisionDepth { get; }
+
         public SquareMaze(string mazeFile, ContentManager contentManager)
         {
             string data = File.ReadAllText(Path.Join(contentManager.RootDirectory, mazeFile));
             string[] lines = data.Split('\n');
 
-            string[] dimensions = lines[0].Split(',');
-            Width = int.Parse(dimensions[0]);
-            Height = int.Parse(dimensions[1]);
+            string[] dimensionsAndDepth = lines[0].Split(',');
+            Width = int.Parse(dimensionsAndDepth[0]);
+            Height = int.Parse(dimensionsAndDepth[1]);
+            VisionDepth = int.Parse(dimensionsAndDepth[2]);
 
             string[] startInfo = lines[1].Split(',');
             StartX = int.Parse(startInfo[0]);

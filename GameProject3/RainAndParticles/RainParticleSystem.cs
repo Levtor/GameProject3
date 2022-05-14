@@ -8,10 +8,12 @@ namespace GameProject3
     public class RainParticleSystem : ParticleSystem
     {
         Rectangle Source;
-        public CardinalDirection Direction = CardinalDirection.East;
+
+        public int Offset = 0;
+
         public bool IsRaining { get; set; } = false;
 
-        public RainParticleSystem(Game game, Rectangle source) : base(game, 16000)
+        public RainParticleSystem(Game game, Rectangle source) : base(game, 20000)
         {
             Source = source;
             InitializeConstants();
@@ -21,35 +23,15 @@ namespace GameProject3
         protected override void InitializeConstants()
         {
             textureFilename = "Raindrop";
-            minNumParticles = 60;
-            maxNumParticles = 120;
+            minNumParticles = 100;
+            maxNumParticles = 150;
         }
 
         protected override void InitializeParticle(ref Particle p, Vector2 where)
         {
-            var sideVelocity = 0;
+            var sideVelocity = RandomHelper.NextFloat(10, -10);
             var rotation = 0f;
-            switch (Direction)
-            {
-                case CardinalDirection.North:
-                    sideVelocity = -120;
-                    rotation = MathHelper.PiOver4;
-                    break;
-                case CardinalDirection.South:
-                    sideVelocity = 120;
-                    rotation = -MathHelper.PiOver4;
-                    break;
-                case CardinalDirection.West:
-                    sideVelocity = -30;
-                    rotation = MathHelper.PiOver2 / 3;
-                    break;
-                case CardinalDirection.East:
-                    sideVelocity = 30;
-                    rotation = -MathHelper.PiOver2/3;
-                    break;
-            }
-
-            var velocity = new Vector2(sideVelocity, RandomHelper.NextFloat(240, 360));
+            var velocity = new Vector2(sideVelocity, RandomHelper.NextFloat(250, 400));
             var lifetime = 540 / velocity.Y;
             var acceleration = Vector2.Zero;
 
@@ -61,6 +43,20 @@ namespace GameProject3
             base.Update(gameTime);
 
             if(IsRaining) AddParticles(Source);
+        }
+
+        protected override void UpdateParticle(ref Particle particle, float dt)
+        {
+            // Update particle's linear motion values
+            particle.Velocity += particle.Acceleration * dt;
+            particle.Position += (particle.Velocity + new Vector2(Offset, 0)) * dt;
+
+            // Update the particle's angular motion values
+            particle.AngularVelocity += particle.AngularAcceleration * dt;
+            particle.Rotation += particle.AngularVelocity * dt;
+
+            // Update the time the particle has been alive 
+            particle.TimeSinceStart += dt;
         }
     }
 }

@@ -10,8 +10,8 @@ namespace GameProject3
     public class WinScreen : GameScreen
     {
         ContentManager content;
-        private SpriteFont tnr12;
-        private SpriteFont tnr30;
+        private SpriteFont tnrsmall;
+        private SpriteFont tnrbig;
 
         public override void Activate()
         {
@@ -19,8 +19,8 @@ namespace GameProject3
 
             if (content == null) content = new ContentManager(ScreenManager.Game.Services, "Content");
 
-            tnr12 = content.Load<SpriteFont>("TNR12");
-            tnr30 = content.Load<SpriteFont>("TNR30");
+            tnrsmall = content.Load<SpriteFont>("TNRsmall");
+            tnrbig = content.Load<SpriteFont>("TNRbig");
         }
 
         public override void HandleInput(GameTime gameTime, InputState input)
@@ -35,14 +35,14 @@ namespace GameProject3
             ScreenManager.SpriteBatch.Begin();
 
             string title = "CONGRATULATIONS!";
-            ScreenManager.SpriteBatch.DrawString(tnr30, title, new Vector2(400 - (int)tnr30.MeasureString(title).X / 2,
-                120 - (int)tnr30.MeasureString(title).Y / 2), Color.Black);
+            ScreenManager.SpriteBatch.DrawString(tnrbig, title, new Vector2(400 - (int)tnrbig.MeasureString(title).X / 2,
+                120 - (int)tnrbig.MeasureString(title).Y / 2), Color.Black);
             title = "YOU WIN!!!";
-            ScreenManager.SpriteBatch.DrawString(tnr30, title, new Vector2(400 - (int)tnr30.MeasureString(title).X / 2,
-                240 - (int)tnr30.MeasureString(title).Y / 2), Color.Black);
+            ScreenManager.SpriteBatch.DrawString(tnrbig, title, new Vector2(400 - (int)tnrbig.MeasureString(title).X / 2,
+                240 - (int)tnrbig.MeasureString(title).Y / 2), Color.Black);
             string instructions = "Press ESC to quit";
-            ScreenManager.SpriteBatch.DrawString(tnr12, instructions, new Vector2(400 - (int)tnr12.MeasureString(instructions).X / 2,
-                360 - (int)tnr12.MeasureString(instructions).Y / 2), Color.Black);
+            ScreenManager.SpriteBatch.DrawString(tnrsmall, instructions, new Vector2(400 - (int)tnrsmall.MeasureString(instructions).X / 2,
+                360 - (int)tnrsmall.MeasureString(instructions).Y / 2), Color.Black);
 
             ScreenManager.SpriteBatch.End();
         }

@@ -107,7 +107,7 @@ namespace GameProject3
             }
         }
 
-        public void Draw(Matrix view, Matrix projection, IMaze maze, int X, int Y, CardinalDirection direction)
+        public void Draw(Matrix view, Matrix projection, IMaze maze, int X, int Y)
         {
             int drawIndex = 0;
             for (int i = squareSideLength; i > 0; i--)

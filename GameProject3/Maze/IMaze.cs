@@ -18,6 +18,8 @@ namespace GameProject3
 
         public CardinalDirection ExitDirection { get; }
 
+        public int VisionDepth { get; }
+
         public bool HasWall(int X, int Y, CardinalDirection cardinal);
     }
 }

@@ -20,8 +20,10 @@ namespace GameProject3
         public int StartY { get; }
         public CardinalDirection StartDirection { get; }
 
-        public LineMaze(int width, int height, bool[] horizontalDefinition, bool[] verticalDefinition,
-            int exitX, int exitY, CardinalDirection exitDirection, int startX, int startY, CardinalDirection startDirection)
+        public int VisionDepth { get; }
+
+        public LineMaze(int width, int height, bool[] horizontalDefinition, bool[] verticalDefinition, int exitX, int exitY,
+            CardinalDirection exitDirection, int startX, int startY, CardinalDirection startDirection, int visionDepth)
         {
             Width = width;
             Height = height;
@@ -36,6 +38,8 @@ namespace GameProject3
             StartX = startX;
             StartY = startY;
             StartDirection = startDirection;
+
+            VisionDepth = visionDepth;
         }
 
         public bool HasWall(int X, int Y, CardinalDirection cardinal)

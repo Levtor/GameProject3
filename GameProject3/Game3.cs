@@ -20,17 +20,24 @@ namespace GameProject3
             Services.AddService(typeof(IScreenFactory), screenFactory);
 
             screenManager = new ScreenManager(this);
-            Components.Add(screenManager);
-
-            
+            Components.Add(screenManager);     
         }
+
         private void AddInitialScreens()
         {
-            screenManager.AddScreen(new WinScreen(), null);
             RainParticleSystem rainSystem = new RainParticleSystem(this, new Rectangle(-200, -30, 1200, 30));
-            GameplayScreen gScreen = new GameplayScreen(this);
-            gScreen.RainSystem = rainSystem;
-            screenManager.AddScreen(gScreen, null);
+            GameplayScreen gScreen1 = new GameplayScreen(this, rainSystem, "Maze1.txt");
+            GameplayScreen gScreen2 = new GameplayScreen(this, rainSystem, "Maze2.txt");
+            GameplayScreen gScreen3 = new GameplayScreen(this, rainSystem, "Maze3.txt");
+            GameplayScreen gScreen4 = new GameplayScreen(this, rainSystem, "Maze4.txt");
+            GameplayScreen gScreen5 = new GameplayScreen(this, rainSystem, "Maze5.txt");
+
+            screenManager.AddScreen(new WinScreen(), null);
+            screenManager.AddScreen(gScreen5, null);
+            screenManager.AddScreen(gScreen4, null);
+            screenManager.AddScreen(gScreen3, null);
+            screenManager.AddScreen(gScreen2, null);
+            screenManager.AddScreen(gScreen1, null);
             screenManager.AddScreen(new TitleScreen(), null);
         }
 
